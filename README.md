@@ -13,21 +13,18 @@ Your goal is to:
 
 Replace this paragraph with your own summary of what your version does.
 
+
 ---
 
 ## How The System Works
 
-Explain your design in plain language.
+Services like Spotify and YouTube Music use recommendation systems that analyze billions of data points, listening history, skips, playlist patterns, and audio features to predict what each user wants to hear next. They combine multiple techniques, including collaborative filtering (finding users with similar taste) and content-based filtering (matching song attributes like tempo, energy, and mood to a listener's preferences). This simplified version focuses on the content-based approach: it scores each song in a small catalog by comparing its genre, mood, and energy level against a user's taste profile, then ranks the results to surface the best matches. The goal is to make the core logic of a real recommender visible and easy to experiment with, without the complexity of large-scale data pipelines or machine learning models.
 
-Some prompts to answer:
 
-- What features does each `Song` use in your system
-  - For example: genre, mood, energy, tempo
-- What information does your `UserProfile` store
-- How does your `Recommender` compute a score for each song
-- How do you choose which songs to recommend
-
-You can include a simple diagram or bullet list if helpful.
+- **Song features:** Each `Song` carries two categorical attributes (`genre`, `mood`) and four numeric attributes (`energy`, `tempo_bpm`, `valence`, `danceability`, `acousticness`), plus metadata (`id`, `title`, `artist`).
+- **UserProfile:** Stores the user's `favorite_genres`, `favorite_moods`, `target_energy`, `target_valence`, `target_tempo_bpm`, and `target_danceability`. These six fields define the taste profile that songs are scored against.
+- **Scoring rule:** The recommender compares each song to the user profile using three features: genre match (+1.5 pts), mood match (+1.0 pt), and energy similarity (up to +1.0 pt via `1 - abs(song_energy - target_energy)`). The max possible score is 3.5. We use 1.5/1.0 instead of the more common 2.0/1.0 split because a 2.0 genre weight lets genre alone tie or beat mood + perfect energy combined (1.0 + 1.0 = 2.0), making energy scoring irrelevant. At 1.5, genre remains the single strongest signal, but mood + energy (up to 2.0) can outrank a genre-only match, so numeric proximity actually influences the final ranking.
+- **Ranking rule:** All songs in the catalog are scored, sorted by descending score, and the top *k* results are returned as recommendations.
 
 ---
 
